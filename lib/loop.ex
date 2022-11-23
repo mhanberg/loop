@@ -4,18 +4,47 @@ defmodule Loop do
       import unquote(__MODULE__), only: [loop: 1]
     end
   end
-  
+
   defmacro loop(block) do
     quote do
       unquote(__MODULE__).do_loop(fn ->
-        import unquote(__MODULE__), only: [break: 0]
+        import unquote(__MODULE__), only: [break: 0, break: 1, next: 0, next: 1]
         unquote(block)
       end)
     end
   end
 
-  def break() do
-    throw(:break_loop)
+  defmacro break() do
+    quote do
+      unquote(__MODULE__).do_throw(:break)
+    end
+  end
+
+  defmacro break({type, _, [condition]}) do
+    quote do
+      unquote(type)(unquote(condition)) do
+        unquote(__MODULE__).do_throw(:break)
+      end
+    end
+  end
+
+  defmacro next do
+    quote do
+      unquote(__MODULE__).do_throw(:next)
+    end
+  end
+
+  defmacro next({type, _, [condition]}) do
+    quote do
+      unquote(type)(unquote(condition)) do
+        unquote(__MODULE__).do_throw(:next)
+      end
+    end
+  end
+
+  @doc false
+  def do_throw(type) do
+    throw({:loop, type})
   end
 
   @doc false
@@ -24,8 +53,11 @@ defmodule Loop do
 
     do_loop(callback)
   catch
-    :break_loop ->
+    {:loop, :break} ->
       :ok
+
+    {:loop, :next} ->
+      do_loop(callback)
 
     thrown ->
       throw(thrown)

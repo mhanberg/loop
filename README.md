@@ -10,14 +10,20 @@ use Loop
 counter = :counters.new(1, [])
 
 loop do
-  if :counters.get(counter, 1) == 10 do
-    IO.puts "We're at 10!"
+  count = :counters.get(counter, 1)
+  # Break the loop completely
+  break if count == 10
 
-    break()
-  else
-    IO.puts "incrementing!"
+  if Enum.random(1..100) < 20 do
+    IO.puts "Sleeping..."
+    Process.sleep(2000)
 
-    :counters.add(counter, 1, 1)
+    # Proceed directly to the next iteration of the loop
+    next()
   end
+
+  IO.puts "Incrementing!"
+
+  :counters.add(counter, 1, 1)
 end
 ```
