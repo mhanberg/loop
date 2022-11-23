@@ -5,7 +5,7 @@ Blursed be the loop...
 The most blursed of all programming constructs, the infinite loop.
 
 ```elixir
-import Loop
+use Loop
 
 counter = :counters.new(1, [])
 
